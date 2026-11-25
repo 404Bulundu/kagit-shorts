@@ -97,6 +97,7 @@ YouTube, **şablondan çıkmış gibi görünen** ve arka arkaya izleyince birbi
 ## Sık sorunlar
 | Görürsen | Anlamı / çözüm |
 |---|---|
+| `npm warn deprecated boolean@3.2.0` | Zararsız: kullanılan bir alt paketin eski olduğunu söyler, bir şey yapmana gerek yok |
 | `'npm' is not recognized` | Node kurulu değil ya da terminal kurulumdan önce açıldı. Node'u kur, terminali kapatıp yeniden aç |
 | `✗ Chrome ya da Edge bulunamadı` | Chrome kur ya da yolunu ver: `$env:CHROME_PATH="C:\...\msedge.exe"` |
 | `model iniyor: ... %40` | İlk seferde ses modeli iniyor (~250 MB), bir kez olur |
