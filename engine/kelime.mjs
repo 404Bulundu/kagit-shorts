@@ -7,6 +7,7 @@
 // Ses yoksa: konuşma hızına göre (saniyede 2,4 kelime) TAHMİNİ zaman yazar, video yine çizilir.
 import fs from 'node:fs'; import path from 'node:path'; import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { FFMPEG } from './ffmpeg.mjs';
 
 const KOK = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ad = process.argv[2] || 'ornek', SD = path.join(KOK, 'stories', ad), VD = path.join(SD, 'voice');
@@ -23,15 +24,18 @@ if (!ses) {
 
 // 1) ses: video için 48 kHz wav, Whisper için 16 kHz ham veri
 const src = path.join(VD, ses), wav = path.join(VD, 'voice.wav');
-spawnSync('ffmpeg', ['-v', 'error', '-y', '-i', src, '-ar', '48000', '-ac', '1', '-c:a', 'pcm_s16le', wav]);
-const ham = spawnSync('ffmpeg', ['-v', 'error', '-i', src, '-ar', '16000', '-ac', '1', '-f', 'f32le', '-'], { maxBuffer: 1 << 30 }).stdout;
+spawnSync(FFMPEG, ['-v', 'error', '-y', '-i', src, '-ar', '48000', '-ac', '1', '-c:a', 'pcm_s16le', wav]);
+const ham = spawnSync(FFMPEG, ['-v', 'error', '-i', src, '-ar', '16000', '-ac', '1', '-f', 'f32le', '-'], { maxBuffer: 1 << 30 }).stdout;
 const audio = new Float32Array(ham.buffer, ham.byteOffset, ham.length / 4), sure = audio.length / 16000;
 
 // 2) Whisper (yerel): duyulan kelimeler + zamanları
 console.log(`${ses}: ${sure.toFixed(1)} sn dinleniyor (ilk seferde model iniyor, ~250 MB)...`);
 const { pipeline, env } = await import('@huggingface/transformers');
 env.cacheDir = path.join(KOK, '.cache', 'models');
-const asr = await pipeline('automatic-speech-recognition', 'onnx-community/whisper-small_timestamped', { dtype: 'q8' });
+const sonYuzde = {};   // ilk seferde model iner (iki .onnx dosyası): ilerlemeyi göster, ekran donmuş sanılmasın
+const asr = await pipeline('automatic-speech-recognition', 'onnx-community/whisper-small_timestamped', { dtype: 'q8',
+  progress_callback: d => { if (d.status !== 'progress' || !/\.onnx$/.test(d.file || '')) return; const f = path.basename(d.file);
+    if (d.progress - (sonYuzde[f] ?? -10) >= 10 || (d.progress >= 100 && sonYuzde[f] < 100)) { sonYuzde[f] = d.progress; console.log(`  model iniyor: ${f} %${Math.round(d.progress)}`); } } });
 // Whisper uzun dosyada zamanları kaydırır: ses, duraklamalardan 12–20 sn'lik parçalara bölünür, her parça ayrı dinlenir.
 const SR = 16000, KARE = SR / 50, enerji = [];   // 20 ms'lik karelerin enerjisi
 for (let i = 0; i + KARE <= audio.length; i += KARE) { let e = 0; for (let j = i; j < i + KARE; j++) e += audio[j] * audio[j]; enerji.push(e); }

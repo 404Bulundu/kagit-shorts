@@ -1,17 +1,24 @@
 {
   "name": "kagit-shorts",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "Kamerasız, kurgu programısız dikey Shorts: senaryo + ses → kodla çizilen video. 404 Bulundu.",
   "license": "MIT",
   "scripts": {
+    "kontrol": "node engine/kontrol.mjs",
     "video": "node engine/video.mjs",
     "kelime": "node engine/kelime.mjs",
     "resim": "node engine/render.mjs"
   },
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@huggingface/transformers": "^3.5.1",
     "puppeteer-core": "^23.11.1"
+  },
+  "allowScripts": {
+    "onnxruntime-node": false,
+    "protobufjs": false,
+    "sharp": false
   }
 }

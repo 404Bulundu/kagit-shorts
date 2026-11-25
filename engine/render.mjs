@@ -6,6 +6,7 @@ import fs from 'node:fs'; import path from 'node:path'; import { spawn, execFile
 import { fileURLToPath } from 'node:url';
 import { startServer } from './serve.mjs';
 import { findChrome } from './chrome.mjs';
+import { FFMPEG } from './ffmpeg.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const ad = process.argv[2] || 'ornek';
@@ -28,14 +29,14 @@ if (args.resim) {
 } else {
   const N = Math.round(DUR * FPS), sessiz = path.join(OUT, '_sessiz.mp4'), son = path.join(OUT, ad + '.mp4');
   console.log(`${ad}: ${N} kare (${DUR.toFixed(1)} sn)`);
-  const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'png', '-i', '-',
+  const ff = spawn(FFMPEG, ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'png', '-i', '-',
     '-c:v', 'libx264', '-preset', 'medium', '-crf', '17', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', sessiz], { stdio: ['pipe', 'inherit', 'inherit'] });
   const t1 = Date.now();
   for (let i = 0; i < N; i++) { const b = await kare(i / FPS); if (!ff.stdin.write(b)) await new Promise(r => ff.stdin.once('drain', r));
     if (i % 30 === 0) process.stdout.write(`kare ${i}/${N}  (%${Math.round(100 * i / N)})  ${((Date.now() - t1) / 1000).toFixed(0)} sn\r`); }
   ff.stdin.end(); await new Promise(r => ff.on('close', r));
   const ses = fs.existsSync(path.join(SD, 'voice', 'voice.wav')) ? path.join(SD, 'voice', 'voice.wav') : null;
-  if (ses) { execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', sessiz, '-i', ses, '-map', '0:v:0', '-map', '1:a:0', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', son]); fs.unlinkSync(sessiz); }
+  if (ses) { execFileSync(FFMPEG, ['-y', '-loglevel', 'error', '-i', sessiz, '-i', ses, '-map', '0:v:0', '-map', '1:a:0', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', son]); fs.unlinkSync(sessiz); }
   else { fs.renameSync(sessiz, son); console.log('\n(ses yok: voice klasörüne mp3 koyarsan video sesli olur)'); }
   console.log(`\nkare ${N}/${N} (%100) -> ${path.relative(process.cwd(), son)}`);
 }

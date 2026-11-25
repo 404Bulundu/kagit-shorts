@@ -6,7 +6,8 @@
 // Shorts güvenli alanı: YouTube arayüzü üstte ~240 px, altta y>1480 ve sağ alttaki buton sütununu kapatır. İçerik y 280–1270 arasına dizilir.
 
 export const W_ = 1080, H_ = 1920;
-const RENK = { zemin: '#f2efe8', yazi: '#16181d', vurgu: '#ff5a1f', gri: '#6b6f78', kart: '#ffffff', not: '#ffe27a', kirmizi: '#e5372b', yesil: '#1f9d55' };
+// RENKLER — videonun bütün renkleri buradan değişir (her videoda farklı bir palet dene)
+const RENK = { zemin: '#fbf9f4', zemin2: '#e9e4d8', yazi: '#16181d', vurgu: '#ff5a1f', gri: '#6b6f78', kart: '#ffffff', not: '#ffe27a', kirmizi: '#e5372b', yesil: '#1f9d55' };
 const MONT = '"Montserrat Black", "Segoe UI", sans-serif', UI = '"Segoe UI", system-ui, sans-serif';
 const UST = 280, ALT = 1270, BOSLUK = 40, BUTON_UST = 960;      // içerik alanı ve sağdaki buton sütununun başladığı y
 const ortaX = (y, h) => (y + h > BUTON_UST ? (60 + 890) / 2 : 540);   // buton sütunu bölgesinde içerik sola, üstte tam ortada
@@ -67,7 +68,7 @@ export function ciz(g, t, DUR) {
   const son = s && s.ogeler.length ? s.ogeler[s.ogeler.length - 1] : null, kay = son ? Math.max(0, (ALT - (son.y + son.h)) / 2) : 0;   // sahneyi dikeyde ortala
   if (s) for (const o of s.ogeler) { if (t < o.t) continue; const u = clamp((t - o.t) / .35), y = o.y + kay; g.save(); o.ciz(g, u, ortaX(y, o.h), y, t); g.restore(); }
   const a = Math.max(i > 0 ? 1 - (t - s.t) / .15 : 0, i + 1 < SAHNELER.length ? (t - (e - .15)) / .15 : 0);   // sahne geçişi: kısa açık perde
-  if (a > 0) { g.fillStyle = `rgba(242,239,232,${clamp(a)})`; g.fillRect(0, 0, W_, H_); }
+  if (a > 0) { g.save(); g.globalAlpha = clamp(a); g.fillStyle = RENK.zemin; g.fillRect(0, 0, W_, H_); g.restore(); }
   altyazi(g, t); gren(g);
 }
 
@@ -90,7 +91,7 @@ function yazi(g, s, x, y, boy, renk, { font = MONT, max = 900, golge: gl = false
   const F = b => font.includes('px') ? font.replace(/\d+px/, b + 'px') : `${b}px ${font}`; g.font = F(boy); const w = g.measureText(s).width; if (w > max) g.font = F(boy * max / w);
   g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = renk; if (gl) { g.shadowColor = 'rgba(255,90,31,.35)'; g.shadowBlur = 24; } g.fillText(s, x, y); g.shadowColor = 'transparent'; }
 function satirla(g, s, boy, maxW) { g.font = `900 ${boy}px ${UI}`; const L = []; let c = ''; for (const w of s.split(/\s+/)) { const d = c ? c + ' ' + w : w; if (g.measureText(d).width > maxW && c) { L.push(c); c = w; } else c = d; } if (c) L.push(c); return L; }
-function zemin(g) { const bg = g.createRadialGradient(540, 690, 0, 540, 690, 1440); bg.addColorStop(0, '#fbf9f4'); bg.addColorStop(1, '#e9e4d8'); g.fillStyle = bg; g.fillRect(0, 0, W_, H_); }
+function zemin(g) { const bg = g.createRadialGradient(540, 690, 0, 540, 690, 1440); bg.addColorStop(0, RENK.zemin); bg.addColorStop(1, RENK.zemin2); g.fillStyle = bg; g.fillRect(0, 0, W_, H_); }
 let _gren = null;   // basılı kâğıt hissi: hafif gren (bir kez üretilir)
 function gren(g) { if (!_gren) { const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'), d = x.createImageData(256, 256);
     for (let i = 0; i < d.data.length; i += 4) { const v = 128 + (Math.random() - .5) * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; } x.putImageData(d, 0, 0); _gren = c; }
