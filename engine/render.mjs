@@ -24,7 +24,7 @@ const { DUR, FPS } = await page.evaluate(() => window.__meta);
 const kare = async t => { const u = await page.evaluate(t => { window.render(t); return document.getElementById('out').toDataURL('image/png'); }, t); return Buffer.from(u.slice(u.indexOf(',') + 1), 'base64'); };
 
 if (args.resim) {
-  const f = path.join(OUT, `kare_${args.resim}.png`); fs.writeFileSync(f, await kare(+args.resim)); console.log('->', f);
+  const f = path.join(OUT, `kare_${args.resim}.png`); fs.writeFileSync(f, await kare(+args.resim)); console.log('->', path.relative(process.cwd(), f));
 } else {
   const N = Math.round(DUR * FPS), sessiz = path.join(OUT, '_sessiz.mp4'), son = path.join(OUT, ad + '.mp4');
   console.log(`${ad}: ${N} kare (${DUR.toFixed(1)} sn)`);
@@ -37,6 +37,6 @@ if (args.resim) {
   const ses = fs.existsSync(path.join(SD, 'voice', 'voice.wav')) ? path.join(SD, 'voice', 'voice.wav') : null;
   if (ses) { execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', sessiz, '-i', ses, '-map', '0:v:0', '-map', '1:a:0', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', son]); fs.unlinkSync(sessiz); }
   else { fs.renameSync(sessiz, son); console.log('\n(ses yok: voice klasörüne mp3 koyarsan video sesli olur)'); }
-  console.log(`\nkare ${N}/${N} (%100) -> ${son}`);
+  console.log(`\nkare ${N}/${N} (%100) -> ${path.relative(process.cwd(), son)}`);
 }
 await browser.close(); server.close();
