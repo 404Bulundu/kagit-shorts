@@ -1,0 +1,7 @@
+Bu video kamerayla çekilmedi. Aslında hiç çekilmedi, kodla çizildi.
+
+Her kart bir kelimeye bağlı. Mesela şimdi ekrana yüz yirmi sayısı geliyor.
+
+Önemli not: kendi konunu ve kendi verini koy. Şablon gibi görünen video para kazanamaz.
+
+Hadi ilk videonu yap.

@@ -1,0 +1,5 @@
+node_modules/
+.cache/
+stories/*/out/
+stories/*/voice/*
+!stories/*/voice/words.json
